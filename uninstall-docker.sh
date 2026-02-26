@@ -6,7 +6,11 @@ PRESERVE_DATA=false
 DRY_RUN=false
 
 # Detect Homebrew prefix automatically
-BREW_PREFIX="$(brew --prefix 2>/dev/null || echo /opt/homebrew)"
+if command -v brew >/dev/null 2>&1; then
+    BREW_PREFIX="$(brew --prefix)"
+else
+    BREW_PREFIX="/usr/local"
+fi
 
 # Parse flags
 while [[ "$#" -gt 0 ]]; do
@@ -118,6 +122,7 @@ remove_item "$BREW_PREFIX/share/fish/vendor_completions.d/docker*" true
 if [ "$PRESERVE_DATA" = false ]; then
     echo "Removing user data..."
     remove_item "$HOME/.docker"
+    remove_item "$HOME/.docker/run"
     remove_item "$HOME/Library/Containers/com.docker.docker"
     remove_item "$HOME/Library/Application Support/Docker Desktop"
     remove_item "$HOME/Library/Group Containers/group.com.docker"
@@ -126,6 +131,8 @@ if [ "$PRESERVE_DATA" = false ]; then
     remove_item "$HOME/Library/Preferences/com.docker.docker.plist"
     remove_item "$HOME/Library/Preferences/com.electron.docker-frontend.plist"
     remove_item "$HOME/Library/Saved Application State/com.electron.docker-frontend.savedState"
+    remove_item "/var/run/docker.sock" true
+    remove_item "/var/run/com.docker.vmnetd.sock" true
 else
     echo "Keeping user data (--preserve-data flag used)."
 fi
