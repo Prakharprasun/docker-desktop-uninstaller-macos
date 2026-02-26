@@ -84,9 +84,13 @@ remove_item "/Applications/Docker.app" true
 echo "Removing privileged helpers..."
 if [ "$DRY_RUN" = false ]; then
     sudo launchctl bootout system /Library/LaunchDaemons/com.docker.vmnetd.plist 2>/dev/null || true
+    launchctl bootout gui/$(id -u) "$HOME/Library/LaunchAgents/com.docker.helper.plist" 2>/dev/null || true
+    launchctl bootout gui/$(id -u) "$HOME/Library/LaunchAgents/com.docker.docker.plist" 2>/dev/null || true
 fi
 remove_item "/Library/PrivilegedHelperTools/com.docker.vmnetd" true
 remove_item "/Library/LaunchDaemons/com.docker.vmnetd.plist" true
+remove_item "$HOME/Library/LaunchAgents/com.docker.helper.plist"
+remove_item "$HOME/Library/LaunchAgents/com.docker.docker.plist"
 
 echo "Removing CLI binaries..."
 remove_item "/opt/homebrew/bin/docker*" true
@@ -129,6 +133,7 @@ fi
 echo "Removing Homebrew cask remnants..."
 remove_item "$BREW_PREFIX/Caskroom/docker"
 remove_item "$BREW_PREFIX/Caskroom/docker-desktop"
+remove_item "$HOME/Library/Caches/Homebrew/downloads/*docker*"
 remove_item "$HOME/Library/Caches/Homebrew/downloads/*Docker*"
 
 echo ""
