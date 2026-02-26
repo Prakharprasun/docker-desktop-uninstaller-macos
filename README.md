@@ -6,6 +6,15 @@ A comprehensive, safe, and transparent bash script to completely remove Docker D
 
 Docker Desktop scatters files across your system—in `/Applications`, `/Library`, `/usr/local/bin`, and `~/Library`. Simply dragging Docker.app to the Trash leaves gigabytes of hidden VMs, configuration files, and helper tools behind. This script hunts them all down and removes them safely.
 
+## Use Cases
+
+* Fix broken Docker Desktop installs
+* Resolve "Cannot connect to Docker daemon" recurring issues
+* Clean reinstall Docker from scratch
+* Remove Docker completely to free up disk space
+* Fix Homebrew Docker install conflicts
+* Clear out bloated 50GB+ hidden VM data files
+
 ## Features
 
 * **Complete Cleanup**: Removes the app, VMs, privileged helpers, CLI binaries, plugins, and shell completions.

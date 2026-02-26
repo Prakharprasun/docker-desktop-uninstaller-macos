@@ -79,6 +79,8 @@ if [ "$DRY_RUN" = false ]; then
     pkill -f com.docker.backend 2>/dev/null || true
     pkill -f com.docker.hyperkit 2>/dev/null || true
     pkill -f com.docker.virtualization 2>/dev/null || true
+    pkill -f vpnkit 2>/dev/null || true
+    pkill -f docker.sock 2>/dev/null || true
     osascript -e 'quit app "Docker"' 2>/dev/null || true
 fi
 
@@ -93,12 +95,18 @@ if [ "$DRY_RUN" = false ]; then
 fi
 remove_item "/Library/PrivilegedHelperTools/com.docker.vmnetd" true
 remove_item "/Library/LaunchDaemons/com.docker.vmnetd.plist" true
+remove_item "/Library/Preferences/com.docker.vmnetd.plist" true
+remove_item "/Library/Logs/com.docker.vmnetd.log" true
+remove_item "/private/var/db/receipts/com.docker.vmnetd.bom" true
+remove_item "/private/var/db/receipts/com.docker.vmnetd.plist" true
 remove_item "$HOME/Library/LaunchAgents/com.docker.helper.plist"
 remove_item "$HOME/Library/LaunchAgents/com.docker.docker.plist"
 
 echo "Removing CLI binaries..."
-remove_item "/opt/homebrew/bin/docker*" true
+remove_item "$BREW_PREFIX/bin/docker*" true
 remove_item "/usr/local/bin/docker*" true
+remove_item "/Applications/Docker.app/Contents/Resources/bin/docker*" true
+remove_item "/Applications/Docker.app/Contents/Resources/cli-plugins" true
 remove_item "/usr/local/bin/docker-credential-desktop" true
 remove_item "/usr/local/bin/docker-credential-ecr-login" true
 remove_item "/usr/local/bin/docker-credential-osxkeychain" true
@@ -124,10 +132,13 @@ if [ "$PRESERVE_DATA" = false ]; then
     remove_item "$HOME/.docker"
     remove_item "$HOME/.docker/run"
     remove_item "$HOME/Library/Containers/com.docker.docker"
+    remove_item "$HOME/Library/Containers/com.docker.docker/Data/vms"
+    remove_item "$HOME/Library/Containers/com.docker.docker/Data/docker.raw"
     remove_item "$HOME/Library/Application Support/Docker Desktop"
     remove_item "$HOME/Library/Group Containers/group.com.docker"
     remove_item "$HOME/Library/Cookies/com.docker.docker.binarycookies"
     remove_item "$HOME/Library/Logs/Docker Desktop"
+    remove_item "$HOME/Library/Logs/com.docker.docker"
     remove_item "$HOME/Library/Preferences/com.docker.docker.plist"
     remove_item "$HOME/Library/Preferences/com.electron.docker-frontend.plist"
     remove_item "$HOME/Library/Saved Application State/com.electron.docker-frontend.savedState"
@@ -137,6 +148,10 @@ else
     echo "Keeping user data (--preserve-data flag used)."
 fi
 
+echo "Removing System Extensions..."
+remove_item "/Library/SystemExtensions/*docker*" true
+remove_item "$HOME/Library/SystemExtensions/*docker*"
+
 echo "Removing Homebrew cask remnants..."
 remove_item "$BREW_PREFIX/Caskroom/docker"
 remove_item "$BREW_PREFIX/Caskroom/docker-desktop"
@@ -144,13 +159,36 @@ remove_item "$HOME/Library/Caches/Homebrew/downloads/*docker*"
 remove_item "$HOME/Library/Caches/Homebrew/downloads/*Docker*"
 
 echo ""
+echo "Verification:"
 if command -v docker >/dev/null 2>&1; then
-    echo "⚠️  docker CLI still exists in PATH"
+    echo "⚠️  docker binary still exists at: $(command -v docker)"
 else
-    if [ "$DRY_RUN" = true ]; then
-        echo "✅ Dry run complete. No files were harmed."
-    else
-        echo "✅ Docker Desktop completely removed."
+    echo "✅ docker binary not found"
+fi
+
+if [ -S /var/run/docker.sock ]; then
+    echo "⚠️  docker socket still exists"
+else
+    echo "✅ docker socket removed"
+fi
+
+echo ""
+if [ "$DRY_RUN" = true ]; then
+    echo "✅ Dry run complete. No files were harmed."
+else
+    echo "✅ Docker Desktop completely removed."
+    
+    echo ""
+    read -p "Do you want to install a fresh copy of Docker Desktop now? (y/N): " reinstall
+    if [[ "$reinstall" == "y" || "$reinstall" == "Y" ]]; then
+        if command -v brew >/dev/null 2>&1; then
+            echo "Installing Docker Desktop via Homebrew..."
+            brew install --cask docker
+            echo "Launch Docker from Applications after install."
+        else
+            echo "Homebrew not found. Install Docker manually from:"
+            echo "https://www.docker.com/products/docker-desktop/"
+        fi
     fi
 fi
 
