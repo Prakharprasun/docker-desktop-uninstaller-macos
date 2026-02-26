@@ -55,16 +55,15 @@ fi
 remove_item() {
     local target="$1"
     local is_privileged="${2:-false}"
-    
-    # Use ls to check for glob matches or existence
-    if ls -1d $target >/dev/null 2>&1; then
+
+    if compgen -G "$target" > /dev/null || [ -e "$target" ]; then
         if [ "$DRY_RUN" = true ]; then
             echo "Would remove: $target"
         else
             if [ "$is_privileged" = true ]; then
-                sudo rm -rf $target
+                sudo rm -rf "$target"
             else
-                rm -rf $target
+                rm -rf "$target"
             fi
         fi
     fi
@@ -73,6 +72,9 @@ remove_item() {
 echo "Stopping Docker processes..."
 if [ "$DRY_RUN" = false ]; then
     pkill -f Docker 2>/dev/null || true
+    pkill -f com.docker.backend 2>/dev/null || true
+    pkill -f com.docker.hyperkit 2>/dev/null || true
+    pkill -f com.docker.virtualization 2>/dev/null || true
     osascript -e 'quit app "Docker"' 2>/dev/null || true
 fi
 
@@ -87,7 +89,8 @@ remove_item "/Library/PrivilegedHelperTools/com.docker.vmnetd" true
 remove_item "/Library/LaunchDaemons/com.docker.vmnetd.plist" true
 
 echo "Removing CLI binaries..."
-remove_item "/usr/local/bin/docker" true
+remove_item "/opt/homebrew/bin/docker*" true
+remove_item "/usr/local/bin/docker*" true
 remove_item "/usr/local/bin/docker-credential-desktop" true
 remove_item "/usr/local/bin/docker-credential-ecr-login" true
 remove_item "/usr/local/bin/docker-credential-osxkeychain" true
@@ -138,3 +141,5 @@ else
         echo "✅ Docker Desktop completely removed."
     fi
 fi
+
+exit 0
