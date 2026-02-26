@@ -10,6 +10,7 @@ Docker Desktop scatters files across your system—in `/Applications`, `/Library
 
 * **Complete Cleanup**: Removes the app, VMs, privileged helpers, CLI binaries, plugins, and shell completions.
 * **Safe by Default**: Requires confirmation before running and prompts for `sudo` only once upfront.
+* **Preview Mode**: Includes a `--dry-run` flag to print exactly what would be removed without deleting anything.
 * **Data Preservation Flag**: Includes an option to keep your containers, images, and volumes intact while reinstalling the app itself.
 * **Transparent**: Tells you exactly what it's stopping and removing as it runs.
 
@@ -31,6 +32,13 @@ Use the `--preserve-data` flag to remove the Docker Desktop app and system binar
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/Prakharprasun/docker-desktop-uninstaller-macos/main/uninstall-docker.sh)" -- --preserve-data
 ```
 
+**Dry Run (Preview Mode):**
+Use the `--dry-run` flag to see exactly what files and folders would be deleted across your entire system, without actually deleting anything.
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Prakharprasun/docker-desktop-uninstaller-macos/main/uninstall-docker.sh)" -- --dry-run
+```
+
 ### Option 2: Clone and Run
 
 **Complete Removal (Destructive):**
@@ -46,4 +54,10 @@ chmod +x uninstall-docker.sh
 
 ```bash
 ./uninstall-docker.sh --preserve-data
+```
+
+**Dry Run (Preview Mode):**
+
+```bash
+./uninstall-docker.sh --dry-run
 ```
